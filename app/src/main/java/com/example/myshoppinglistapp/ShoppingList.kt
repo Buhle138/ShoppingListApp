@@ -2,6 +2,7 @@ package com.example.myshoppinglistapp
 
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -9,9 +10,11 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
@@ -62,7 +65,31 @@ fun ShoppingListApp (){
                 .padding(16.dp)
         ){
             items(sItems){
-                ShoppingListItem(it, {}, {})
+               item ->
+                if(item.isEditing){ //If we are editing (in other words if we clicked on the edit button, the we want to show the edit screen.
+                    SHoppingItemEditor(item = item, onEditComplete = {
+                        editedName, editedQuantity -> //editedName and editedQuantity are the parameters of this annonymous lambda method.
+                        sItems = sItems.map {
+                            it.copy(isEditing = false)}
+                        val editedItem = sItems.find{it.id == item.id} //Finding the object that we are currently editing.
+                        editedItem?.let{
+                            it.name = editedName
+                            it.quantity = editedQuantity
+                        }
+                    })
+                }else{//Else we want to show the edit screen
+                    ShoppingListItem(item = item, onEditClick = {
+                        /*
+                        When we are clicking on the edit button how do we know the edit button we clicked
+                        **Please note: and remember sItems is the list of all the objects stored.
+                        * */
+                        sItems = sItems.map { it.copy(isEditing = it.id==item.id ) }
+
+
+                    }, onDeleteClick = {
+                        sItems = sItems - item
+                    })
+                }
             }
         }
     }
@@ -132,7 +159,48 @@ fun ShoppingListApp (){
 }
 
 
+@Composable
+fun SHoppingItemEditor(item: ShoppingItem, onEditComplete: (String, Int) -> Unit){
+    var editedName by remember { mutableStateOf(item.name)}
+    var editedQuantity by remember { mutableStateOf(item.quantity.toString())}
+    var isEditing by remember { mutableStateOf(item.isEditing)}
 
+    Row(modifier = Modifier
+        .fillMaxWidth()
+        .background(Color.White)
+        .padding(8.dp),
+        horizontalArrangement = Arrangement.SpaceEvenly
+        ){
+        Column {
+            BasicTextField(
+                value = editedName,
+                onValueChange = {editedName = it},
+                singleLine = true,
+                modifier = Modifier
+                    .wrapContentSize()
+                    .padding(8.dp)
+            )
+
+            BasicTextField(
+                value = editedQuantity,
+                onValueChange = {editedQuantity = it},
+                singleLine = true,
+                modifier = Modifier
+                    .wrapContentSize()
+                    .padding(8.dp)
+            )
+        }
+
+        Button(
+            onClick = {
+                isEditing = false
+                onEditComplete(editedName, editedQuantity.toIntOrNull() ?: 1)
+            }
+        ) {
+            Text("Save")
+        }
+    }
+}
 
 @Composable
 fun ShoppingListItem(
@@ -148,7 +216,8 @@ fun ShoppingListItem(
             .border(
                 border = BorderStroke(2.dp, Color(0XFF018786)),
                 shape = RoundedCornerShape(20)
-            )
+            ),
+        horizontalArrangement = Arrangement.SpaceBetween
     ){
         Text(text = item.name, modifier = Modifier.padding(8.dp))
         Text(text = "Qty: ${item.quantity}", modifier = Modifier.padding(8.dp))
