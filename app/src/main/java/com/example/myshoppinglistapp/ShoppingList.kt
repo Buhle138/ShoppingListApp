@@ -1,6 +1,7 @@
 package com.example.myshoppinglistapp
 
 
+import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -64,26 +65,47 @@ fun ShoppingListApp (){
                 .fillMaxSize()
                 .padding(16.dp)
         ){
+
+            /*BIIIG NOTE:!!!!!!!  ALL OBJECTS START OFF THEIR isEditing as false. Scroll all the way up to find out.*/
+            /*ANOTHER BIG NOTE!!!! THIS CODE DOES NOT STOP RUNNING UNTIL YOU CLOSE THE APPLICATION ON THE EMULATOR.
+            THIS MEANS THAT IF DURING THE RUNTIME THE OBJECTS isEditing WAS FALSE AND NOW IT'S TRUE THE IF STATEMENT BELOW WILL RUN AGAIN.
+            * */
             items(sItems){
-               item ->
-                if(item.isEditing){ //If we are editing (in other words if we clicked on the edit button, the we want to show the edit screen.
+               item -> //PLEASE NOTE THAT THIS ITEM IS THE CURRENT ITEM THAT WE ARE CURRENTLY ON
+                //THE 'it' REPRESENTS ALL THE ALREADY EXISTING OBJECTS.
+                //SO PICTURE IN YOUR HEAD TWO SCENARIOS  ONE WHERE THERE IS OLD OBJECTS which are represented by 'it'. TWO THE OLD OBJECT THAT WE ARE ON WILL BE REPRESENTED BY 'item'.
+                if(item.isEditing){ //If we are editing (in other words if we clicked on the edit button, then we want to show the edit screen.
+
+                    /*Plase note the onEditComplete button will only be executed when we click on the save button.*/
+
                     SHoppingItemEditor(item = item, onEditComplete = {
-                        editedName, editedQuantity -> //editedName and editedQuantity are the parameters of this annonymous lambda method.
-                        sItems = sItems.map {
-                            it.copy(isEditing = false)}
-                        val editedItem = sItems.find{it.id == item.id} //Finding the object that we are currently editing.
+                        editedName, editedQuantity -> //editedName is the new name entered by the user same as editedQuantity they are from the SHoppingItem() composable.
+                        sItems = sItems.map { it.copy(isEditing = false)}/*Once we click on the save button all the isEditing buttons will be false for all the objects.*/
+
+                        val editedItem = sItems.find{it.id == item.id} /*Finding the object that we are currently editing.
+                            True will be returned when we find the object that is currently edited. which will have id
+                        */
                         editedItem?.let{
-                            it.name = editedName
+                            it.name = editedName //
                             it.quantity = editedQuantity
                         }
+
+
                     })
-                }else{//Else we want to show the edit screen
+                }else{/*Else we want to show the screen with the added items. 'Note we haven't clicked yet on the edit icon.
+                Once we click on the icon if editing an item. Then the onEditClick code will be ran.
+                */
                     ShoppingListItem(item = item, onEditClick = {
                         /*
                         When we are clicking on the edit button how do we know the edit button we clicked
                         **Please note: and remember sItems is the list of all the objects stored.
                         * */
-                        sItems = sItems.map { it.copy(isEditing = it.id==item.id ) }
+                        sItems = sItems.map { it.copy(isEditing = it.id==item.id ) } /*NOTE: THIS IS WHERE THE FALSE BOOLEAN OF THE OBJECT THAT WE CLICKED
+                        GOES FROM FALSE TO 'TRUE'.
+                        /*NOTE: THE NEW sItems ARE NOW SENT BACK TO THE IF items(sItems) METHOD TO BE EVALUATED AGAIN, OBVIOUSLY NOW AT THIS POINT THE OBJECT THAT WE CLICKED ON
+                        has an isEditing property of 'TRUE' WHICH WILL NOW RUN THE CODE UNDER THE IF STATEMENT.
+                        */
+                        */
 
 
                     }, onDeleteClick = {
@@ -155,10 +177,9 @@ fun ShoppingListApp (){
                }
            })
     }
-
 }
 
-
+/*WHEN THE EDIT ICON IS CLICKED ON ANY OF THE CATEGORIES WE USE THIS COMPOSABLE.*/
 @Composable
 fun SHoppingItemEditor(item: ShoppingItem, onEditComplete: (String, Int) -> Unit){
     var editedName by remember { mutableStateOf(item.name)}
@@ -193,7 +214,7 @@ fun SHoppingItemEditor(item: ShoppingItem, onEditComplete: (String, Int) -> Unit
 
         Button(
             onClick = {
-                isEditing = false
+                isEditing = false //isEditing is false because once we click on the save button we are no longer editing.
                 onEditComplete(editedName, editedQuantity.toIntOrNull() ?: 1)
             }
         ) {
@@ -202,12 +223,9 @@ fun SHoppingItemEditor(item: ShoppingItem, onEditComplete: (String, Int) -> Unit
     }
 }
 
+/*WHEN THE ADD BUTTON IS CLICKED FROM THE ALERT DIALOG FORM.*/
 @Composable
-fun ShoppingListItem(
-    item: ShoppingItem,
-    onEditClick: () -> Unit,
-    onDeleteClick: () -> Unit,
-){
+fun ShoppingListItem(item: ShoppingItem, onEditClick: () -> Unit, onDeleteClick: () -> Unit, ){
 
     Row(
         modifier = Modifier
