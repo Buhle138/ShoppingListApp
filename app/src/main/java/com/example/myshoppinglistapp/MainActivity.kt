@@ -33,7 +33,8 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    ShoppingListApp() //method from the ShoppingList file.
+                    //ShoppingListApp() //method from the ShoppingList file.
+
                 }
             }
         }
