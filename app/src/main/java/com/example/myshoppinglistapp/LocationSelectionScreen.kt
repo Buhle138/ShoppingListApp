@@ -55,7 +55,7 @@ fun LocationSelectionScreen(
         Button(onClick = { newLocation = LocationData(userLocation.value.latitude, userLocation.value.longitude)
                 onLocationSelected(newLocation) //what to do with the new location.
         }) {
-            Text("Get Location")
+            Text("Set Location")
         }
     }
 

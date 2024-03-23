@@ -55,7 +55,7 @@ data class  ShoppingItem(val id:Int,
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ShoppingListApp (
-    locationData: LocationData,
+    locationUtils: LocationUtils,
     viewModel: LocationViewModel,
     navController: NavController,
     context: Context,
@@ -73,7 +73,7 @@ fun ShoppingListApp (
             if(permissions[Manifest.permission.ACCESS_COARSE_LOCATION] == true && permissions[Manifest.permission.ACCESS_FINE_LOCATION] == true){
                 //I have access to your location
 
-                LocationUtils(context).requestLocationUpdates(viewModel = viewModel)
+                locationUtils.requestLocationUpdates(viewModel = viewModel)
             }else{
                 //Ask for permission
                 val rationalRequired  = ActivityCompat.shouldShowRequestPermissionRationale(
@@ -134,6 +134,7 @@ fun ShoppingListApp (
                         editedItem?.let{
                             it.name = editedName //
                             it.quantity = editedQuantity
+                            it.address = address
                         }
 
 
@@ -181,7 +182,8 @@ fun ShoppingListApp (
                                        val newItem = ShoppingItem(
                                            id = sItems.size+1,
                                            name = itemName,
-                                           quantity = itemQuantity.toInt()
+                                           quantity = itemQuantity.toInt(),
+                                           address = address
                                        )
                                        sItems = sItems + newItem
                                        showDialog = false
@@ -222,8 +224,8 @@ fun ShoppingListApp (
                    )
                    Button(onClick = {
 
-                       if(LocationUtils(context).hasLocationPermission(context)){
-                           LocationUtils(context).requestLocationUpdates(viewModel)
+                       if(locationUtils.hasLocationPermission(context)){
+                           locationUtils.requestLocationUpdates(viewModel)
                            navController.navigate("locationscreen"){
                                this.launchSingleTop
                            }
